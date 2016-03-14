@@ -54,7 +54,7 @@ end
 
 -- Puts the sprite on a random position inside of the obs.
 -- The observation should have intensities in the [0, 1] range.
-local function placeSpriteRandomly(obs, sprite, border)
+local function placeSpriteRandomly(obs, coord, sprite, border)
   assert(obs:dim() == 3, "expecting an image")
   assert(sprite:dim() == 3, "expecting a sprite")
   local h = obs:size(2)
@@ -64,7 +64,8 @@ local function placeSpriteRandomly(obs, sprite, border)
 
   local y = torch.random(1 + border, h - spriteH + 1 - border)
   local x = torch.random(1 + border, w - spriteW + 1 - border)
-
+  coord[1]=x
+  coord[2]=y
   local subTensor = obs[{{}, {y, y + spriteH - 1}, {x, x + spriteW - 1}}]
   subTensor:add(sprite)
   -- Keeping the values in the [0, 1] range.
@@ -184,9 +185,10 @@ function M.createData(extraConfig)
   local obs = torch.Tensor(dataset.data[1]:size(1), config.megapatch_w, config.megapatch_w)
   assert(dataset.labels:max() < config.nClasses, "expecting labels from {0, .., nClasses - 1}")
 
-  local target = torch.Tensor()
+  local target = torch.Tensor(config.nDigits):zero()
   local fillTarget = assert(targetFilling[config.targetFilling], "unknown targetFilling")
   local step = nExamples
+  local coord = torch.Tensor(config.nDigits,2):zero()
   local function nextExample()
     obs:zero()
     placeDistractors(config, obs, dataset.data)
@@ -200,15 +202,16 @@ function M.createData(extraConfig)
       end
 
       local sprite = dataset.data[perm[step]]
-      placeSpriteRandomly(obs, sprite, config.border)
+      placeSpriteRandomly(obs, coord[i], sprite, config.border)
 
       local selectedDigit = dataset.labels[perm[step]][1]
       -- The marked class will be from {1, .., nClasses}.
       table.insert(usedClasses, selectedDigit + 1)
+      target[i]=selectedDigit
     end
 
-    fillTarget(target, usedClasses, config)
-    return {obs, target}
+    -- fillTarget(target, usedClasses, config)
+    return {obs, target, coord}
   end
 
   return {
