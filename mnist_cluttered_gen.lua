@@ -4,7 +4,7 @@ os.execute('rm -r images')
 lfs.mkdir("images")
 local mnist_cluttered = require 'mnist_cluttered'
 local numberOfImages = 70000
-local dataConfig = {megapatch_w=100, num_dist=5, nDigits=1,targetFilling = 'combine'}
+local dataConfig = {megapatch_w=100, num_dist=12, nDigits=1, targetFilling = 'combine'}
 local dataInfo = mnist_cluttered.createData(dataConfig)
 for i = 1, numberOfImages do
    local observation, target, coord = unpack(dataInfo.nextExample())
