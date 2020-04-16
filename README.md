@@ -1,5 +1,5 @@
-Cluttered MNIST Dataset
-=======================
+see https://github.com/deepmind/mnist-cluttered
+see https://github.com/ablavatski/mnist-cluttered
 
 A setup script will download MNIST and produce `mnist/*.t7` files:
 
